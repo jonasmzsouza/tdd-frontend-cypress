@@ -152,7 +152,6 @@ describe("Image Registration", () => {
   });
 
   describe("Submitting an image and updating the list", () => {
-
     const input = {
       title: "BR Alien",
       url: "https://cdn.mos.cms.futurecdn.net/eM9EvWyDxXcnQTTyH8c8p5-1200-80.jpg",
@@ -202,6 +201,45 @@ describe("Image Registration", () => {
     it(`Then The inputs should be cleared`, () => {
       registerForm.elements.titleInput().should("have.value", "");
       registerForm.elements.imageUrlInput().should("have.value", "");
+    });
+  });
+
+  describe("Refreshing the page after submitting an image clicking in the submit button", () => {
+    const input = {
+      title: "Alien SP",
+      url: "https://cdn.mos.cms.futurecdn.net/eM9EvWyDxXcnQTTyH8c8p5-1200-80.jpg",
+    };
+
+    after(() => {
+      cy.clearAllLocalStorage();
+    });
+
+    it(`Given I am on the image registration page`, () => {
+      cy.visit("/");
+    });
+
+    it(`Then I have submitted an image by clicking the submit button`, () => {
+      registerForm.typeTitle(input.title);
+      registerForm.typeUrl(input.url);
+      registerForm.clickSubmit();
+      cy.wait(100);
+    });
+
+    it(`When I refresh the page`, () => {
+      cy.reload();
+    });
+
+    it(`Then I should still see the submitted image in the list of registered images`, () => {
+      cy.getAllLocalStorage().should((ls) => {
+        const currentLs = ls[window.location.origin];
+        const elements = JSON.parse(Object.values(currentLs));
+        const lastElement = elements[elements.length - 1];
+
+        assert.deepStrictEqual(lastElement, {
+          title: input.title,
+          imageUrl: input.url,
+        });
+      });
     });
   });
 });
