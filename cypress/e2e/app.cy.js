@@ -22,22 +22,29 @@ class RegisterForm {
   clickSubmit() {
     this.elements.submitBtn().click();
   }
+
+  hitEnter() {
+    cy.focused().type("{enter}");
+  }
 }
 const registerForm = new RegisterForm();
 const colors = {
   errors: "rgb(220, 53, 69)",
-  success: "",
+  success: "rgb(222, 226, 230)",
 };
 
 describe("Image Registration", () => {
   describe("Submitting an image with invalid inputs", () => {
-    after(() => {
-      cy.clearAllLocalStorage();
-    });
+
     const input = {
       title: "",
       imageUrl: "",
     };
+
+    after(() => {
+      cy.clearAllLocalStorage();
+    });
+
     it("Given I am on the image registration page", () => {
       cy.visit("/");
     });
@@ -72,6 +79,77 @@ describe("Image Registration", () => {
         const border = styles.getPropertyValue("border-right-color");
         assert.strictEqual(border, colors.errors);
       });
+    });
+  });
+
+  describe("Submitting an image with valid inputs using enter key", () => {
+
+    const input = {
+      title: "Alien BR",
+      url: "https://cdn.mos.cms.futurecdn.net/eM9EvWyDxXcnQTTyH8c8p5-1200-80.jpg",
+    };
+
+    after(() => {
+      cy.clearAllLocalStorage();
+    });
+
+    it("Given I am on the image registration page", () => {
+      cy.visit("/");
+    });
+
+    it(`When I enter "${input.title}" in the title field`, () => {
+      registerForm.typeTitle(input.title);
+    });
+
+    it(`Then I should see a check icon in the title field`, () => {
+      registerForm.elements.titleInput().should(([element]) => {
+        const styles = window.getComputedStyle(element);
+        const border = styles.getPropertyValue("border-right-color");
+        assert.strictEqual(border, colors.success);
+      });
+    });
+
+    it(`When I enter "${input.url}" in the URL field`, () => {
+      registerForm.typeUrl(input.url);
+    });
+
+    it(`Then I should see a check icon in the imageUrl field`, () => {
+      registerForm.elements.imageUrlInput().should(([element]) => {
+        const styles = window.getComputedStyle(element);
+        const border = styles.getPropertyValue("border-right-color");
+        assert.strictEqual(border, colors.success);
+      });
+    });
+
+    it(`Then I can hit enter to submit the form`, () => {
+      registerForm.hitEnter();
+      cy.wait(100);
+    });
+
+    it(`And the list of registered images should be updated with the new item`, () => {
+      cy.get("#card-list .card-img").should((elements) => {
+        const lastElement = elements[elements.length - 1];
+        const src = lastElement.getAttribute("src");
+        assert.strictEqual(src, input.url);
+      });
+    });
+
+    it(`And the new item should be stored in the localStorage`, () => {
+      cy.getAllLocalStorage().should((ls) => {
+        const currentLs = ls[window.location.origin];
+        const elements = JSON.parse(Object.values(currentLs));
+        const lastElement = elements[elements.length - 1];
+
+        assert.deepStrictEqual(lastElement, {
+          title: input.title,
+          imageUrl: input.url,
+        });
+      });
+    });
+
+    it(`Then The inputs should be cleared`, () => {
+      registerForm.elements.titleInput().should("have.value", "");
+      registerForm.elements.imageUrlInput().should("have.value", "");
     });
   });
 });
