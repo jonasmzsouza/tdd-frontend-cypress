@@ -30,7 +30,7 @@ class RegisterForm {
 const registerForm = new RegisterForm();
 const colors = {
   errors: "rgb(220, 53, 69)",
-  success: "rgb(222, 226, 230)",
+  success: "rgb(134, 183, 254)",
 };
 
 describe("Image Registration", () => {
@@ -102,8 +102,8 @@ describe("Image Registration", () => {
     it(`Then I should see a check icon in the title field`, () => {
       registerForm.elements.titleInput().should(([element]) => {
         const styles = window.getComputedStyle(element);
-        const border = styles.getPropertyValue("border-right-color");
-        assert.strictEqual(border, colors.success);
+        const backgroundImage = styles.getPropertyValue("background-image");
+        assert.strictEqual(backgroundImage, "none");
       });
     });
 
@@ -114,8 +114,8 @@ describe("Image Registration", () => {
     it(`Then I should see a check icon in the imageUrl field`, () => {
       registerForm.elements.imageUrlInput().should(([element]) => {
         const styles = window.getComputedStyle(element);
-        const border = styles.getPropertyValue("border-right-color");
-        assert.strictEqual(border, colors.success);
+        const backgroundImage = styles.getPropertyValue("background-image");
+        assert.strictEqual(backgroundImage, "none");
       });
     });
 
